@@ -1,0 +1,20 @@
+# Set working directory
+workdir: "/work/dir" 
+
+#prefix of all output files:
+sample_name: ""
+
+# Reference genome as fasta
+genome: ""
+
+# Directory input data
+fastq: ""
+
+# Options passed to minimap2 (optional)
+minimap2_opts: ""
+
+# Options passed to sniffles
+sniffles_opts: "--minsvlen 50"
+
+# threads (optional; default:30)
+threads: 100
