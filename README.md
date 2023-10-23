@@ -17,7 +17,7 @@ This is a `snakemake` pipeline that takes long-read DNA sequencing data (fastq) 
 Clone the directory:
 
 ```bash
-git clone --recursive https://github.com/umranyaman/ONT_DNA_pipeline.git
+git clone --recursive https://github.com/egustavsson/long-read_SV_calling.git
 ```
 
 Create conda environment for the pipeline which will install all the dependencies:
