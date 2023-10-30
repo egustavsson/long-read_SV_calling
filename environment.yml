@@ -8,6 +8,6 @@ dependencies:
  - snakemake==7.18.2
  - python>3.6
  - minimap2==2.26
- - nglmr==0.2.7 
+ - ngmlr==0.2.7 
  - samtools==1.17
  - sniffles==2.0.7
