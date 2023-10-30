@@ -1,7 +1,7 @@
 # Set working directory
 workdir: "/work/dir" 
 
-#prefix of all output files:
+# prefix of all output files:
 sample_name: ""
 
 # Reference genome as fasta
@@ -10,8 +10,14 @@ genome: ""
 # Directory input data
 fastq: ""
 
+# Aligner to use (minimap2 or ngmlr; default: minimap2)
+aligner: "ngmlr"
+
 # Options passed to minimap2 (optional)
 minimap2_opts: ""
+
+# Options passed to nglmr (optional)
+ngmlr_opts: ""
 
 # Options passed to sniffles
 sniffles_opts: "--minsvlen 50"

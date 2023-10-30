@@ -2,36 +2,45 @@ $schema: "http://json-schema.org/draft-06/schema#"
 
 description: snakemake configuration file
 
-properties: 
+properties:
   workdir:
     type: string
-    minilength: 1
+    minLength: 1
 
   sample_name:
     type: string
-    minilength: 1
+    minLength: 1
 
   genome:
     type: string
-    minilength: 1
+    minLength: 1
 
   fastq:
     type: string
-    minilength: 1
+    minLength: 1
+
+  aligner:
+    type: string
+    minLength: 1
+    default: "minimap2"
 
   minimap2_opts:
     type: string
-    minilength: 1
+    minLength: 1
+
+  ngmlr_opts:
+    type: string
+    minLength: 1
 
   sniffles_opts:
     type: string
-    minilength: 1
-    
-  threads: 
+    minLength: 1
+
+  threads:
     type: integer
     default: 30
 
-required: 
+required:
   - workdir
   - sample_name
   - genome

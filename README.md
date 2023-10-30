@@ -1,6 +1,6 @@
 # Long-read structural variant calling
 
-This is a `snakemake` pipeline that takes long-read DNA sequencing data (fastq) as input, generates fastq stats using `nanostat`, map the reads to the genome using `minimap2` and uses `sniffles` for calling structural variants.
+This is a `snakemake` pipeline that takes long-read DNA sequencing data (fastq) as input, generates fastq stats using `nanostat`, map the reads to the genome using either `minimap2` or `ngmlr` and uses `sniffles2` for calling structural variants.
 
 # Getting Started
 
@@ -29,7 +29,9 @@ conda env create -f environment.yml
 
 ## Usage
 
-Edit `config.yml` to set up the working directory and input files/directories. `snakemake` command should be issued from within the pipeline directory. Please note that before you run any of the `snakemake` commands, make sure to first activate the conda environment using the command `conda activate long-read_SV_calling`.
+Edit `config.yml` to set up the working directory and input files/directories. There is also the option of which aligner to use, default is `minimap2`. 
+
+`snakemake` command should be issued from within the pipeline directory. Please note that before you run any of the `snakemake` commands, make sure to first activate the conda environment using the command `conda activate long-read_SV_calling`.
 
 ```bash
 cd long-read_SV_calling
@@ -49,7 +51,18 @@ working directory
 |--- Nanostat/  
      |-- # output of nanostat - fastq stats   
 |--- Mapping/  
-     |-- # output of minimap2 - aligned reads  
+     |-- # output of minimap2/ngmlr - aligned reads  
 |--- sniffles/  
      |-- # output of sniffles - vcf with SVs
+```
+
+## Versions
+
+```
+snakemake  : 7.18.2
+nanostat   : 1.6
+minimap2   : 2.26
+ngmlr      : 0.2.7
+samtools   : 1.17
+sniffles   : 2.0.7
 ```

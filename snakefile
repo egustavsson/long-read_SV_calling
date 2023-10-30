@@ -4,26 +4,31 @@ from os import path
 
 min_version("7.18")
 
+# Define the config file
+configfile: "config.yaml"
 
+# Read the aligner and its options from the config file
+configfile: "config.yaml"
+config = yaml.expand(config)
 
-configfile:"config.yml"
+# Validate config file
 validate(config, schema="config_schema.yml")
+
 WORKDIR = config["workdir"]
 SNAKEDIR = path.dirname(workflow.snakefile)
 
 sample = config["sample_name"]
 
 target_list = [
-    "mapping/" + sample + ".bam",
     "sniffles/" + sample + ".vcf"
 ]
-
 
 rule all:
     input: 
         target_list
 
-# --------------
+# Concatenate reads -------------------------------------------------------
+
 in_fastq = config["fastq"]
 if not path.isabs(in_fastq):
     in_fastq = path.join(SNAKEDIR, in_fastq)
@@ -41,7 +46,7 @@ rule concatenate_reads:
 	shell:"""
 	find {input.fq}  -regextype posix-extended -regex '.*\.(fastq.gz|fq.gz)$' -exec zcat {{}} \\; > {output.fq_concat}
 	"""
-# ------------------------
+# Read stats --------------------------------------------------------------
 
 rule nanostat:
     input:
@@ -56,9 +61,12 @@ rule nanostat:
         NanoStat -n {output.ns} -t {threads} --tsv --fastq {input.fq}
         """
 
-# ------------------------
+# Align reads -------------------------------------------------------------
 
-rule mapping: 
+# Config file input on which aligner to use
+
+# minimap2
+rule align_minimap2: 
     input:
         fq = rules.concatenate_reads.output.fq_concat,
         ref = config["genome"]
@@ -74,20 +82,44 @@ rule mapping:
     shell:"""
     minimap2 {params.opts} -y -x map-ont -t {threads} -a --eqx -k 17 -K 5g {input.ref} {input.fq} -o {output.sam}
     """
+# ngmlr
+rule align_ngmlr: 
+    input:
+        fq = rules.concatenate_reads.output.fq_concat,
+        ref = config["genome"]
+
+    output:
+        sam = path.join("mapping", f"{sample}.sam")
+    
+    threads: config["threads"]
+
+    params:
+        opts = config["nglmr_opts"]
+    
+    shell:"""
+    ngmlr -t 4 -r {input.ref} -q {input.fq} -o {output.sam} -t {threads} -x ont -o {output.sam}
+    """
+
+# Conditionally invoke the appropriate aligner rule
+if config["aligner"] == "minimap2":
+    include: align_minimap2
+else:
+    include: align_ngmlr
+
+# ------------------------------------------------------------
 
 rule sam_to_bam: 
     input:
-        sam = rules.mapping.output.sam
-
+        sam = lambda wildcards: path.join("mapping", f"{sample}.sam")
     output:
         bam = path.join("mapping", f"{sample}.bam")
-
     threads: config["threads"]
 
-    shell:"""    
+    shell:"""
         samtools sort -@ {threads} -O BAM -o {output.bam} {input.sam};
         samtools index {output.bam} 
-        """
+    """
+# ------------------------------------------------------------
 
 rule sniffles:
     input: 
