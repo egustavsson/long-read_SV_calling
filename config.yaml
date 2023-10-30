@@ -1,14 +1,14 @@
 # Set working directory
-workdir: "/work/dir" 
+workdir: "/home/JHEmilGustavsson/MinaRyten/Emil/projects/SCA4/results" 
 
 # prefix of all output files:
-sample_name: ""
+sample_name: "23712"
 
 # Reference genome as fasta
-genome: ""
+genome: "/home/MinaRyten/Emil/references/GRCh38.primary_assembly.genome.fa"
 
 # Directory input data
-fastq: ""
+fastq: "/home/MinaRyten/Emil/projects/SCA4/data/23712/"
 
 # Aligner to use (minimap2 or ngmlr; default: minimap2)
 aligner: "ngmlr"

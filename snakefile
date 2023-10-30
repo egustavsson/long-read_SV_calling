@@ -1,15 +1,13 @@
 from snakemake.utils import min_version, validate
 from pathlib import Path
 from os import path
+import yaml
 
 min_version("7.18")
 
 # Define the config file
-configfile: "config.yaml"
-
-# Read the aligner and its options from the config file
-configfile: "config.yaml"
-config = yaml.expand(config)
+configfile:"config.yaml"
+workdir: config["workdir"]
 
 # Validate config file
 validate(config, schema="config_schema.yml")
@@ -65,46 +63,32 @@ rule nanostat:
 
 # Config file input on which aligner to use
 
-# minimap2
-rule align_minimap2: 
+print("Aligner selected:", config["aligner"])
+
+rule align:
     input:
         fq = rules.concatenate_reads.output.fq_concat,
         ref = config["genome"]
-
-    output:
-        sam = path.join("mapping", f"{sample}.sam")
-
-    threads: config["threads"]
-
-    params:
-        opts = config["minimap2_opts"]
     
-    shell:"""
-    minimap2 {params.opts} -y -x map-ont -t {threads} -a --eqx -k 17 -K 5g {input.ref} {input.fq} -o {output.sam}
-    """
-# ngmlr
-rule align_ngmlr: 
-    input:
-        fq = rules.concatenate_reads.output.fq_concat,
-        ref = config["genome"]
-
     output:
         sam = path.join("mapping", f"{sample}.sam")
     
     threads: config["threads"]
-
-    params:
-        opts = config["nglmr_opts"]
     
-    shell:"""
-    ngmlr -t 4 -r {input.ref} -q {input.fq} -o {output.sam} -t {threads} -x ont -o {output.sam}
-    """
-
-# Conditionally invoke the appropriate aligner rule
-if config["aligner"] == "minimap2":
-    include: align_minimap2
-else:
-    include: align_ngmlr
+    params:
+        minimap2_opts = config["minimap2_opts"],
+        ngmlr_opts = config["ngmlr_opts"]
+    
+    run:
+        if config["aligner"] == "minimap2":
+            shell(
+                "minimap2 {params.minimap2_opts} -y -x map-ont -t {threads} -a --eqx -k 17 -K 5g {input.ref} {input.fq} -o {output.sam}"
+            )
+            
+        else:
+            shell(
+                "ngmlr -r {input.ref} -q {input.fq} -t {threads} -x ont -o {output.sam}"
+            )
 
 # ------------------------------------------------------------
 
