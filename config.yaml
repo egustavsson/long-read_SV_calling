@@ -2,13 +2,13 @@
 workdir: "/home/JHEmilGustavsson/MinaRyten/Emil/projects/SCA4/results" 
 
 # prefix of all output files:
-sample_name: "17274"
+sample_name: "18956"
 
 # Reference genome as fasta
 genome: "/home/MinaRyten/Emil/references/GRCh38.primary_assembly.genome.fa"
 
 # Directory input data
-fastq: "/home/MinaRyten/Emil/projects/SCA4/data/17274/"
+fastq: "/home/MinaRyten/Emil/projects/SCA4/data/18956/"
 
 # Aligner to use (minimap2 or ngmlr; default: minimap2)
 aligner: "minimap2"
@@ -24,7 +24,7 @@ sniffles_opts: "--minsvlen 50 --tandem-repeats"
 
 # Sniffles2 supports optionally specifying tandem repeat region annotations (.bed) 
 # Give location of .bed file below and add "--tandem-repeats" at the end of sniffles_opts above
-tandem_repeat_region: "/home/JHEmilGustavsson/MinaRyten/Emil/Snakemakes/long-read_SV_calling/data/human_GRCh38_no_alt_analysis_set.trf.bed"
+tandem_repeat_region: "/home/MinaRyten/Emil/Snakemakes/long-read_SV_calling/data/human_GRCh38_no_alt_analysis_set.trf.bed"
 
 # threads (optional; default:30)
 threads: 100

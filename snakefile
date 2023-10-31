@@ -118,7 +118,7 @@ rule sam_to_bam:
 
 rule sniffles:
     input: 
-        bam = rules.sam_to_bam.output.bam
+        bam = rules.sam_to_bam.output.bam,
         STR_bed = config["tandem_repeat_region"]
 
     output:
