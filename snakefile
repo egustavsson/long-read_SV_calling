@@ -87,7 +87,7 @@ rule align:
             
         else:
             shell(
-                "ngmlr -r {input.ref} -q {input.fq} -t {threads} -x ont -o {output.sam}"
+                "ngmlr -r {input.ref} -q {input.fq} -t {threads} {params.ngmlr_opts} -x ont -o {output.sam}"
             )
 
 # ------------------------------------------------------------

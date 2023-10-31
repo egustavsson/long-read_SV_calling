@@ -2,13 +2,13 @@
 workdir: "/home/JHEmilGustavsson/MinaRyten/Emil/projects/SCA4/results" 
 
 # prefix of all output files:
-sample_name: "23712"
+sample_name: "17274"
 
 # Reference genome as fasta
 genome: "/home/MinaRyten/Emil/references/GRCh38.primary_assembly.genome.fa"
 
 # Directory input data
-fastq: "/home/MinaRyten/Emil/projects/SCA4/data/23712/"
+fastq: "/home/MinaRyten/Emil/projects/SCA4/data/17274/"
 
 # Aligner to use (minimap2 or ngmlr; default: minimap2)
 aligner: "ngmlr"
