@@ -90,7 +90,7 @@ rule align:
                 "ngmlr -r {input.ref} -q {input.fq} -t {threads} {params.ngmlr_opts} -x ont -o {output.sam}"
             )
 
-# ------------------------------------------------------------
+# Sorted BAM --------------------------------------------------------------
 
 rule sam_to_bam: 
     input:
@@ -103,11 +103,23 @@ rule sam_to_bam:
         samtools sort -@ {threads} -O BAM -o {output.bam} {input.sam};
         samtools index {output.bam} 
     """
-# ------------------------------------------------------------
+# Depth and coverage ------------------------------------------------------
+
+# rule depth:
+#     input: 
+    
+#     output:
+    
+#     conda: "envs/depth.yml"
+
+#     threads:
+
+# Call SVs ----------------------------------------------------------------
 
 rule sniffles:
     input: 
         bam = rules.sam_to_bam.output.bam
+        STR_bed = config["tandem_repeat_region"]
 
     output:
         vcf = path.join("sniffles", f"{sample}.vcf")
@@ -118,5 +130,5 @@ rule sniffles:
     threads: config["threads"]
 
     shell:"""
-        sniffles -i {input.bam} -v {output.vcf} {params.sn_opts} --threads {threads}
+        sniffles -i {input.bam} -v {output.vcf} {params.sn_opts} {input.STR_bed} --threads {threads}
         """

@@ -32,6 +32,9 @@ properties:
 
   sniffles_opts:
     type: string
+  
+  tandem_repeat_region:
+    type: string
 
   threads:
     type: integer
