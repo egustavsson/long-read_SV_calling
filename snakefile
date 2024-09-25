@@ -118,17 +118,17 @@ rule sam_to_bam:
 
 rule sniffles:
     input: 
-        bam = rules.sam_to_bam.output.bam,
-        STR_bed = config["tandem_repeat_region"]
+        bam = rules.sam_to_bam.output.bam
 
     output:
         vcf = path.join("sniffles", f"{sample}.vcf")
 
     params:
-        sn_opts = config["sniffles_opts"]
+        sn_opts = config["sniffles_opts"],
+	STR_bed = config["tandem_repeat_region"]
 
     threads: config["threads"]
 
     shell:"""
-        sniffles -i {input.bam} -v {output.vcf} {params.sn_opts} {input.STR_bed} --threads {threads}
+        sniffles -i {input.bam} -v {output.vcf} {params.sn_opts} {params.STR_bed} --threads {threads}
         """
