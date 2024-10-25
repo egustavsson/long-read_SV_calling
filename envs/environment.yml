@@ -11,3 +11,6 @@ dependencies:
  - ngmlr==0.2.7 
  - samtools==1.09
  - sniffles==2.0.7
+ - deeptools==3.5.4
+ - pip:
+   - pod5==0.1.21

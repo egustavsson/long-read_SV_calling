@@ -1,3 +1,4 @@
+name: depth
 channels:
   - conda-forge
   - bioconda
