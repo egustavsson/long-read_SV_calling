@@ -1,6 +1,6 @@
 # Long-read structural variant calling
 
-This is a `snakemake` pipeline that takes long-read DNA sequencing data (fastq) as input, generates fastq stats using `nanostat`, map the reads to the genome using either `minimap2` or `ngmlr`, generates depth and coverage calculations using `samtools` and uses `sniffles2` for calling structural variants.
+This is a `snakemake` pipeline that takes long-read DNA sequencing data (fastq) as input, generates fastq stats using `nanostat`, maps the reads to the genome using either `minimap2` or `ngmlr`, calculates depth and coverage using `samtools`, calls structural variants using `sniffles2`, and detects tandem repeat expansions using `straglr`.
 
 # Getting Started
 
@@ -47,13 +47,25 @@ snakemake --use-conda -n all
 ## Output
 ```
 working directory  
-|--- config.yml           # a copy of the parameters used in the pipeline  
+|--- config.yml                      # parameters used  
+|--- processed_reads/  
+     |-- <sample>_reads.fq          # concatenated reads  
 |--- Nanostat/  
-     |-- # output of nanostat - fastq stats   
-|--- Mapping/  
-     |-- # output of minimap2/ngmlr - aligned reads  
+     |-- <sample>_stat_out.txt      # output of NanoStat  
+|--- mapping/  
+     |-- <sample>.bam               # aligned reads  
+     |-- <sample>.bam.bai           # BAM index  
+|--- coverage/  
+     |-- <sample>_depth.tsv         # coverage info from samtools  
 |--- sniffles/  
-     |-- # output of sniffles - vcf with SVs
+     |-- <sample>.vcf               # structural variant calls  
+|--- straglr/  
+     |-- <sample>.straglr.vcf                 # tandem repeat calls  
+     |-- <sample>.straglr.filtered.vcf       # filtered TRs  
+     |-- <sample>.straglr.trf.bed            # regions detected by TRF  
+     |-- <sample>.straglr.genotype.txt       # per-locus genotype  
+     |-- <sample>.straglr.insertions.txt     # repeat insertions  
+     |-- <sample>.straglr.bamstats.txt       # coverage stats
 ```
 
 ## Versions
@@ -65,4 +77,5 @@ minimap2   : 2.26
 ngmlr      : 0.2.7
 samtools   : 1.09
 sniffles   : 2.0.7
+straglr    : 1.5.3
 ```

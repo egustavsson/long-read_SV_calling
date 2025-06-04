@@ -36,6 +36,9 @@ properties:
   tandem_repeat_region:
     type: string
 
+  straglr_opts:
+    type: string
+
   threads:
     type: integer
     default: 30

@@ -18,8 +18,17 @@ SNAKEDIR = path.dirname(workflow.snakefile)
 sample = config["sample_name"]
 
 target_list = [
-    "sniffles/" + sample + ".vcf"
+    f"sniffles/{sample}.vcf",
+    f"coverage/{sample}_depth.tsv",
+    f"Nanostat/{sample}_stat_out.txt",
+    f"straglr/{sample}.straglr.vcf",
+    f"straglr/{sample}.straglr.filtered.vcf",
+    f"straglr/{sample}.straglr.trf.bed",
+    f"straglr/{sample}.straglr.genotype.txt",
+    f"straglr/{sample}.straglr.insertions.txt",
+    f"straglr/{sample}.straglr.bamstats.txt"
 ]
+
 
 rule all:
     input: 
@@ -105,14 +114,20 @@ rule sam_to_bam:
     """
 # Depth and coverage ------------------------------------------------------
 
-# rule depth:
-#     input: 
-    
-#     output:
-    
-#     conda: "envs/depth.yml"
+rule depth:
+    input: 
+        bam = rules.sam_to_bam.output.bam
 
-#     threads:
+    output:
+        depth_tsv = path.join("coverage", f"{sample}_depth.tsv")
+
+    threads: config["threads"]
+
+    conda: "envs/depth.yml"
+
+    shell:"""
+        samtools depth -@ {threads} {input.bam} > {output.depth_tsv}
+        """
 
 # Call SVs ----------------------------------------------------------------
 
@@ -131,4 +146,31 @@ rule sniffles:
 
     shell:"""
         sniffles -i {input.bam} -v {output.vcf} {params.sn_opts} {params.STR_bed} --threads {threads}
+        """
+
+# Call STRs --------------------------------------------------------------
+
+rule straglr:
+    input:
+        bam=rules.sam_to_bam.output.bam,
+        ref=config["genome"]
+    
+    output:
+        vcf="straglr/{sample}.straglr.vcf",
+        vcf_filt="straglr/{sample}.straglr.filtered.vcf",
+        trf="straglr/{sample}.straglr.trf.bed",
+        genotype="straglr/{sample}.straglr.genotype.txt",
+        insertions="straglr/{sample}.straglr.insertions.txt",
+        stats="straglr/{sample}.straglr.bamstats.txt"
+    
+    params:
+        str_opts = config["straglr_opts"]
+
+    conda:
+        "envs/straglr.yml"
+    
+    threads: config["threads"]
+    
+    shell:"""
+        straglr -t {threads} -i {input.bam} {params.str_opts} -r {input.ref} -o straglr/{wildcards.sample}.straglr.vcf
         """

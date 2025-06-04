@@ -26,5 +26,9 @@ sniffles_opts: "--minsvlen 50 --tandem-repeats"
 # Give location of .bed file below and add "--tandem-repeats" at the end of sniffles_opts above
 tandem_repeat_region: "/home/MinaRyten/Emil/Snakemakes/long-read_SV_calling/data/human_GRCh38_no_alt_analysis_set.trf.bed"
 
+# Options passed to straglr
+# stragle has many options for TR calling: https://github.com/bcgsc/straglr
+straglr_opts: ""
+
 # threads (optional; default:30)
 threads: 100
