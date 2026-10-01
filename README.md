@@ -47,7 +47,7 @@ snakemake --use-conda -n all
 ## Output
 ```
 working directory  
-|--- config.yml                      # parameters used  
+|--- config.yml                     # parameters used  
 |--- processed_reads/  
      |-- <sample>_reads.fq          # concatenated reads  
 |--- Nanostat/  
@@ -60,7 +60,7 @@ working directory
 |--- sniffles/  
      |-- <sample>.vcf               # structural variant calls  
 |--- straglr/  
-     |-- <sample>.straglr.vcf                 # tandem repeat calls  
+     |-- <sample>.straglr.vcf                # tandem repeat calls  
      |-- <sample>.straglr.filtered.vcf       # filtered TRs  
      |-- <sample>.straglr.trf.bed            # regions detected by TRF  
      |-- <sample>.straglr.genotype.txt       # per-locus genotype  
