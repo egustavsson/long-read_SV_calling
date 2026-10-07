@@ -1,115 +1,181 @@
 # Long-read structural variant calling
 
-This single-sample Snakemake workflow concatenates long-read DNA FASTQs, computes
-SeqKit read statistics, maps with minimap2 or ngmlr directly into a sorted BAM,
-indexes the BAM, calculates per-base depth, calls structural variants with
-Sniffles2, and detects tandem repeat expansions with Straglr.
+A Snakemake pipeline for analysing long-read DNA sequencing data, with one sample
+per configuration file.
+
+The workflow generates read statistics with **SeqKit**, aligns reads with
+**minimap2** or **ngmlr**, creates a sorted and indexed BAM, calculates depth with
+**samtools**, calls structural variants with **Sniffles2**, and detects tandem
+repeat expansions with **Straglr**.
 
 ## Installation
 
-Requires Linux and Conda. Run commands from the repository root.
+Requires Linux and [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 ```bash
 git clone https://github.com/egustavsson/long-read_SV_calling.git
 cd long-read_SV_calling
+
 conda env create -f envs/environment.yml
 conda activate long-read_SV_calling
 ```
 
-The base environment contains Snakemake. Tool environments are installed per
-rule using `--sdm conda`. These YAML files pin the primary tools, but are not
-complete locks of every transitive dependency and build.
+Snakemake installs the required tool environments automatically when the pipeline
+is run with `--sdm conda`.
 
-## Configuration and execution
+## Input and configuration
 
-Edit `config.yaml`; its paths are examples from the previous workflow, not
-portable defaults. Use **a new workdir** when validating this update. Paths that
-are relative are resolved against the repository root, including paths supplied
-in another config file. One sample belongs to each workdir.
+Required inputs:
 
-`fastq` accepts a single file or a directory searched recursively. Supported
-extensions are `.fastq`, `.fq`, `.fastq.gz`, and `.fq.gz`. Files are sorted by
-absolute path and tracked individually by Snakemake. Run after sequencing and
-file transfer have finished. Keep input FASTQs outside workdir to avoid collecting
-the workflow's own processed reads on the next invocation.
+- Long-read DNA reads in FASTQ format.
+- The matching reference genome in uncompressed FASTA format.
 
-`genome` must be an uncompressed FASTA. A symlink and FASTA index are created in
-workdir under `reference/`; the original reference directory need not be writable.
-`tandem_repeat_region` accepts a BED matching the reference assembly, or an empty
-string to disable tandem-repeat annotations in Sniffles. Do not put
-`--tandem-repeats` in `sniffles_opts`.
+Edit `config.yaml` before running. The main settings are:
 
-`threads` sets the maximum requested per computational rule; `--cores` sets the
-total scheduler budget. SeqKit uses up to eight threads, indexing/depth up to
-four, and concatenation one. Alignment divides its allocation between the
-aligner and sorting. At a one-core allocation both piped processes still have a
-main thread. `sort_mem` is the memory limit **per sorting thread**, not total
-workflow memory. Reference indexing and mapping also need memory; monitor a
-representative sample before running many jobs concurrently.
+```yaml
+# Working directory for results
+workdir: "/path/to/results"
 
-```bash
-# Inspect the planned work and rendered commands.
-snakemake --cores 32 --sdm conda --dry-run --printshellcmds
+# Prefix of output files
+sample_name: "sample01"
 
-# Install the rule environments before running data.
-snakemake --cores 32 --sdm conda --conda-create-envs-only
+# Reference genome
+genome: "/path/to/reference.fa"
 
-# Run.
-snakemake --cores 32 --sdm conda --printshellcmds
+# Input FASTQ file or directory
+fastq: "/path/to/fastq_directory/"
+
+# Aligner to use
+aligner: "minimap2"
+
+# Maximum threads per rule
+threads: 32
 ```
 
-To use a separate config:
+A FASTQ directory is searched recursively for `.fastq`, `.fq`, `.fastq.gz`, and
+`.fq.gz` files. The files are sorted and tracked individually by Snakemake.
+
+Relative paths are resolved against the pipeline directory. Keep input FASTQs
+outside the results directory, and use a separate working directory for each
+sample. Start the pipeline once sequencing and file transfer are complete.
+
+The remaining settings control mapping presets, extra tool options, repeat
+annotations and sorting memory. Comments in `config.yaml` describe these options.
+
+## Run the pipeline
+
+Run from the pipeline directory with the Conda environment activated:
+
+```bash
+snakemake --cores 32 --sdm conda
+```
+
+Replace `32` with the total number of cores available to the run. The `threads`
+setting in `config.yaml` controls the maximum requested by individual rules.
+
+### Optional commands
+
+These are useful when checking a configuration or preparing a run. They are not
+required before every execution.
+
+```bash
+# Preview the jobs without running them
+snakemake --cores 32 --sdm conda --dry-run
+
+# Display the shell commands during execution
+snakemake --cores 32 --sdm conda --printshellcmds
+
+# Install the tool environments without processing data
+snakemake --cores 32 --sdm conda --conda-create-envs-only
+
+# Resume after an interrupted run, rebuilding incomplete outputs
+snakemake --cores 32 --sdm conda --rerun-incomplete
+```
+
+To use a different configuration file:
 
 ```bash
 snakemake --configfile configs/my_sample.yaml --cores 32 --sdm conda
 ```
 
-Extra tool options remain shell fragments: quote argument values when needed.
-Use these fields for analysis options, not for overriding the workflow's input,
-output, reference, or thread arguments. Files embedded in extra option strings
-are not tracked automatically as dependencies.
+## Repeat annotation files
 
-## Mapping and repeat calling
+### Sniffles tandem-repeat annotations
 
-The supplied configuration keeps the original minimap2 `map-ont`, `-k 17`,
-`-K 5g`, `--eqx`, and `-y` options. The workflow additionally supplies `-Y` for
-soft-clipped supplementary alignments, as recommended by Straglr. Presets are
-configurable; if selecting another preset, review/remove the explicit `-k`
-override. Updated tool versions and `-Y` can change alignments and calls, so
-compare a known sample against v0.1.0 before using this as a production release.
+Sniffles can use an optional BED file of tandem-repeat regions. Human reference
+annotations are available from the
+[Sniffles annotations directory](https://github.com/fritzsedlazeck/Sniffles/tree/master/annotations).
 
-Straglr now uses its upstream `straglr.py BAM FASTA PREFIX --nprocs N` interface
-and tracks its VCF, TSV, and BED outputs. The former rule declared filtered VCF,
-TRF BED, genotype, insertion and BAM statistics files that this command does not
-produce. Those targets are removed rather than fabricated. This workflow uses
-Straglr's default genome-scan mode; options such as `--loci` can be supplied in
-`straglr_opts` for targeted genotyping (such files are not tracked separately).
+For the GRCh38 file used in the example configuration, download it from the
+pipeline directory:
 
-## Outputs
+```bash
+mkdir -p data
 
-| Location within workdir | Contents |
+curl --fail --location \
+    https://raw.githubusercontent.com/fritzsedlazeck/Sniffles/master/annotations/human_GRCh38_no_alt_analysis_set.trf.bed \
+    --output data/human_GRCh38_no_alt_analysis_set.trf.bed
+```
+
+Set its location in `config.yaml`:
+
+```yaml
+# Optional tandem-repeat annotations for Sniffles
+tandem_repeat_region: "data/human_GRCh38_no_alt_analysis_set.trf.bed"
+```
+
+Choose annotations matching your reference assembly and chromosome names. To
+omit them, set `tandem_repeat_region: ""`. The workflow supplies the
+`--tandem-repeats` argument; do not also add it to `sniffles_opts`.
+
+```yaml
+# Optional targeted repeat genotyping
+straglr_opts: "--loci /absolute/path/to/simple_repeats.bed"
+```
+
+Use an absolute path here because Straglr runs inside the results directory.
+This loci BED is separate from the Sniffles annotation file.
+
+## Output
+
+Results are written under the configured `workdir`. `<sample>` is the value of
+`sample_name`.
+
+| File or directory | Contents |
 | --- | --- |
-| `qc/<sample>_seqkit_stats.tsv` | Read count, bases, lengths, N50, quality and GC statistics |
-| `qc/<sample>_fastq_inputs.tsv` | Ordered input paths, byte sizes and modification times |
+| `qc/<sample>_seqkit_stats.tsv` | Read counts, bases, lengths, N50, quality and GC statistics |
+| `qc/<sample>_fastq_inputs.tsv` | Ordered input file list, sizes and modification times |
 | `mapping/<sample>.bam` | Coordinate-sorted alignments |
-| `mapping/<sample>.bam.bai` | Tracked BAM index, rebuilt separately if missing |
-| `coverage/<sample>_depth.tsv` | Samtools per-base depth at covered positions |
+| `mapping/<sample>.bam.bai` | BAM index |
+| `coverage/<sample>_depth.tsv` | Per-base depth at covered positions |
 | `sniffles/<sample>.vcf` | Structural variant calls |
-| `sniffles/<sample>.snf` | Candidate data for later Sniffles cohort calling |
+| `sniffles/<sample>.snf` | Data for subsequent Sniffles cohort calling |
 | `straglr/<sample>.straglr.vcf` | Tandem repeat variants |
-| `straglr/<sample>.straglr.tsv` | Detailed read-level results |
-| `straglr/<sample>.straglr.bed` | Summarized locus genotypes |
-| `reference/genome.fa` and `.fai` | Local reference symlink and FASTA index |
-| `logs/` | Logs for each processing step |
+| `straglr/<sample>.straglr.tsv` | Read-level repeat results |
+| `straglr/<sample>.straglr.bed` | Summarized repeat genotypes |
+| `reference/` | Reference symlink and FASTA index |
+| `logs/` | Logs from each processing step |
 
-The concatenated uncompressed FASTQ is temporary and removed once mapping and
-SeqKit finish. Use `--notemp` if you want to retain it. No intermediate SAM is
-written. Concatenation accepts mixed compressed/plain inputs and adds a trailing
-newline between files when needed; it does not repair malformed FASTQ records.
-Depth retains the previous `samtools depth` default filters and omission of
-zero-depth positions; this is not a genome-wide mean coverage summary.
+The concatenated FASTQ is temporary and removed after alignment and read QC.
+Add `--notemp` to the run command to retain it. No intermediate SAM is written.
 
-## Pinned primary tools
+## Analysis options
+
+- `minimap2_preset` selects the mapping preset. Additional options are supplied
+  through `minimap2_opts`; `"--eqx"` is a simple choice. An explicit `-k` setting
+  overrides the preset's k-mer length. The workflow supplies uppercase `-Y` for
+  soft clipping of supplementary alignments.
+- `sort_mem` sets samtools sorting memory **per thread**, rather than total job
+  memory.
+- `sniffles_opts`, `ngmlr_opts` and `straglr_opts` accept additional analysis
+  options. Leave input, output and thread arguments to the workflow. Files named
+  within these option strings are not separately tracked by Snakemake.
+- Depth uses the default samtools filters and omits zero-depth positions; the
+  output is not a genome-wide mean coverage summary.
+
+## Software versions
+
+The environment files pin the main tools to the following versions:
 
 | Tool | Version |
 | --- | --- |
@@ -121,10 +187,12 @@ zero-depth positions; this is not a genome-wide mean coverage summary.
 | Sniffles | 2.8.1 |
 | Straglr | 1.5.6 |
 
-## References
+## Tool documentation
 
-- [SeqKit usage](https://bioinf.shenwei.me/seqkit/usage/)
-- [Snakemake software deployment](https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html)
+- [SeqKit](https://bioinf.shenwei.me/seqkit/usage/)
 - [Minimap2](https://github.com/lh3/minimap2)
+- [NGMLR](https://github.com/philres/ngmlr)
+- [Samtools](https://www.htslib.org/doc/samtools.html)
 - [Sniffles](https://github.com/fritzsedlazeck/Sniffles)
-- [Straglr interface and outputs](https://github.com/BirolLab/straglr)
+- [Straglr](https://github.com/BirolLab/straglr)
+- [Snakemake](https://snakemake.readthedocs.io/)
