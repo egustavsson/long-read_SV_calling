@@ -1,8 +1,5 @@
 # Long-read structural variant calling
 
-Development toward **v0.2.0**. The historical workflow remains available as the
-GitHub release **v0.1.0**.
-
 This single-sample Snakemake workflow concatenates long-read DNA FASTQs, computes
 SeqKit read statistics, maps with minimap2 or ngmlr directly into a sorted BAM,
 indexes the BAM, calculates per-base depth, calls structural variants with
