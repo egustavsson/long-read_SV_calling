@@ -121,9 +121,6 @@ zero-depth positions; this is not a genome-wide mean coverage summary.
 | Sniffles | 2.8.1 |
 | Straglr | 1.5.6 |
 
-The environments still need to be solved and exercised on your machine before
-tagging v0.2.0. See `VALIDATION.md` for the checks performed on this draft.
-
 ## References
 
 - [SeqKit usage](https://bioinf.shenwei.me/seqkit/usage/)
