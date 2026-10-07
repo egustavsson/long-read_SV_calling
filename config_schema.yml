@@ -1,15 +1,22 @@
-$schema: "http://json-schema.org/draft-06/schema#"
+$schema: https://json-schema.org/draft/2020-12/schema
+type: object
+additionalProperties: false
 
-description: snakemake configuration file
+required:
+  - workdir
+  - sample_name
+  - genome
+  - fastq
 
 properties:
+
   workdir:
     type: string
     minLength: 1
 
   sample_name:
     type: string
-    minLength: 1
+    pattern: ^[A-Za-z0-9][A-Za-z0-9_.-]*$
 
   genome:
     type: string
@@ -21,30 +28,46 @@ properties:
 
   aligner:
     type: string
-    minLength: 1
-    default: "minimap2"
+    enum:
+      - minimap2
+      - ngmlr
+    default: minimap2
+
+  minimap2_preset:
+    type: string
+    enum:
+      - map-ont
+      - lr:hq
+      - map-hifi
+      - map-pb
+    default: map-ont
 
   minimap2_opts:
     type: string
+    default: --eqx -k 17 -K 5g -y
 
   ngmlr_opts:
     type: string
+    default: ""
 
   sniffles_opts:
     type: string
-  
+    default: --minsvlen 50
+
   tandem_repeat_region:
     type: string
+    default: ""
 
   straglr_opts:
     type: string
+    default: ""
 
   threads:
     type: integer
+    minimum: 1
     default: 30
 
-required:
-  - workdir
-  - sample_name
-  - genome
-  - fastq
+  sort_mem:
+    type: string
+    pattern: ^[1-9][0-9]*[KMG]$
+    default: 1G

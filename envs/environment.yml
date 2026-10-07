@@ -1,16 +1,8 @@
 name: long-read_SV_calling
 channels:
- - conda-forge
- - bioconda
- - defaults
+  - conda-forge
+  - bioconda
+  - nodefaults
 dependencies:
- - nanostat==1.6
- - snakemake==7.18.2
- - python>3.6
- - minimap2==2.26
- - ngmlr==0.2.7 
- - samtools==1.09
- - sniffles==2.0.7
- - deeptools==3.5.4
- - pip:
-   - pod5==0.1.21
+  - python=3.12
+  - snakemake-minimal=9.27.0
