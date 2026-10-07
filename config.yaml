@@ -1,16 +1,16 @@
 # Set working directory (use a new directory when testing v0.2)
-workdir: "/home/MinaRyten/Emil/zMISC/results_v0.2"
+workdir: ""
 
 # Prefix of all output files
-sample_name: "test"
+sample_name: ""
 
 # Reference genome as uncompressed FASTA
 # Relative paths are resolved against the pipeline directory
-genome: "/home/MinaRyten/Emil/references/GRCh38.primary_assembly.genome.fa"
+genome: ""
 
 # Input FASTQ file or directory (searched recursively)
 # Keep the input directory separate from the working directory
-fastq: "/home/MinaRyten/Emil/projects/SCA4/data/27376/"
+fastq: ""
 
 # Aligner to use (minimap2 or ngmlr; default: minimap2)
 aligner: "minimap2"
@@ -31,7 +31,7 @@ sniffles_opts: "--minsvlen 50"
 
 # Optional tandem-repeat region annotations (.bed) for Sniffles
 # Use an empty string to disable; do not add --tandem-repeats to sniffles_opts
-tandem_repeat_region: "/home/MinaRyten/Emil/Snakemakes/long-read_SV_calling/data/human_GRCh38_no_alt_analysis_set.trf.bed"
+tandem_repeat_region: ""
 
 # Options passed to Straglr
 # https://github.com/BirolLab/straglr
